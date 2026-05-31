@@ -41,6 +41,7 @@ If no major rewrite is needed, just improve the flow and provide the translation
 export async function callGemini(systemPrompt, userText) {
   const apiKey = process.env.GEMINI_API_KEY;
   
+  // Strictly using 1.5-flash per your request
   const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
   
   const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
