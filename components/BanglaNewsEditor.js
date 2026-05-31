@@ -9,7 +9,6 @@ export default function BanglaNewsEditor() {
   const [loading, setLoading] = useState(false);
   const [loadingType, setLoadingType] = useState("");
   
-  // Tab and UI states
   const [activeTab, setActiveTab] = useState(""); 
   const [isClean, setIsClean] = useState(false);  
   
@@ -22,7 +21,6 @@ export default function BanglaNewsEditor() {
   const wordCount = text.split(/\s+/).filter(Boolean).length;
   const charCount = text.length;
 
-  // Auto-Save to Local Storage
   useEffect(() => {
     const savedDraft = localStorage.getItem("newsWizardDraft");
     if (savedDraft) setText(savedDraft);
@@ -37,7 +35,7 @@ export default function BanglaNewsEditor() {
 
   const handleTextChange = (e) => {
     setText(e.target.value);
-    setIsClean(false); 
+    setIsClean(false); // Only resets if they edit in the main top editor
   };
 
   const checkSpelling = async () => {
@@ -120,7 +118,6 @@ export default function BanglaNewsEditor() {
     }
   };
 
-  // Allow user to manually type and edit the AI's suggestion
   const handleSuggestionChange = (index, newSuggestion) => {
     const newErrors = [...errors];
     newErrors[index].suggestion = newSuggestion;
@@ -153,7 +150,6 @@ export default function BanglaNewsEditor() {
     }
   };
 
-  // Simply removes the error from the list without modifying the text
   const ignoreOne = (index) => {
     const newErrors = [...errors];
     newErrors.splice(index, 1);
@@ -170,18 +166,6 @@ export default function BanglaNewsEditor() {
     navigator.clipboard.writeText(textToCopy);
     setCopyMsg("✓ কপি করা হয়েছে!");
     setTimeout(() => setCopyMsg(""), 2000);
-  };
-
-  const renderHighlighted = () => {
-    if (!errors.length) return text;
-    let html = text;
-    errors.forEach((e) => {
-      html = html.replace(
-        new RegExp(e.word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g"),
-        `<mark class="${styles.errorHighlight}" title="${e.suggestion} (${e.rule})">${e.word}</mark>`
-      );
-    });
-    return html;
   };
 
   return (
@@ -204,6 +188,7 @@ export default function BanglaNewsEditor() {
               value={text}
               onChange={handleTextChange}
               placeholder="এখানে সংবাদ লিখুন..."
+              spellCheck="false"
             />
 
             <div className={styles.actionBar}>
@@ -270,7 +255,13 @@ export default function BanglaNewsEditor() {
                            {copyMsg || "📋 কপি করুন"}
                         </button>
                      </div>
-                     <div className={styles.previewBox}>{text}</div>
+                     <textarea 
+                       className={styles.editableResult} 
+                       value={text} 
+                       onChange={(e) => setText(e.target.value)} 
+                       spellCheck="false"
+                       title="আপনি চাইলে লেখাটি এখানে সম্পাদনা করতে পারেন"
+                     />
                    </div>
                 )}
 
@@ -321,24 +312,34 @@ export default function BanglaNewsEditor() {
                 {activeTab === "সম্পাদিত" && rewritten && (
                   <div>
                     <div className={styles.resultSection}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                         <h3 className={styles.resultTitle}>সম্পাদিত বাংলা</h3>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                         <h3 className={styles.resultTitle} style={{ margin: 0, borderBottom: 'none' }}>সম্পাদিত বাংলা</h3>
                          <button className={`${styles.btn} ${styles.btnOutline}`} onClick={() => handleCopy(rewritten)}>
                             {copyMsg || "📋 কপি করুন"}
                          </button>
                       </div>
-                      <div className={styles.previewBox}>{rewritten}</div>
+                      <textarea 
+                         className={styles.editableResult} 
+                         value={rewritten} 
+                         onChange={(e) => setRewritten(e.target.value)} 
+                         spellCheck="false"
+                      />
                     </div>
 
                     {english && (
                       <div className={styles.resultSection}>
-                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                           <h3 className={styles.resultTitle}>English Translation</h3>
+                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                           <h3 className={styles.resultTitle} style={{ margin: 0, borderBottom: 'none' }}>English Translation</h3>
                            <button className={`${styles.btn} ${styles.btnOutline}`} onClick={() => handleCopy(english)}>
                               {copyMsg || "📋 Copy"}
                            </button>
                          </div>
-                        <div className={styles.previewBox}>{english}</div>
+                         <textarea 
+                           className={styles.editableResult} 
+                           value={english} 
+                           onChange={(e) => setEnglish(e.target.value)} 
+                           spellCheck="false"
+                         />
                       </div>
                     )}
 
