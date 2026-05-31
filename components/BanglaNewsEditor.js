@@ -12,11 +12,13 @@ export default function BanglaNewsEditor() {
   const [rewritten, setRewritten] = useState("");
   const [english, setEnglish] = useState("");
   const [changes, setChanges] = useState([]);
-  const [focusMode, setFocusMode] = useState(false); // 🔥 Focus Mode State
+  const [focusMode, setFocusMode] = useState(false);
+  const [copyMsg, setCopyMsg] = useState("");
 
   const wordCount = text.split(/\s+/).filter(Boolean).length;
+  const charCount = text.length;
 
-  // 🔥 Auto-Save to Local Storage
+  // Auto-Save to Local Storage
   useEffect(() => {
     const savedDraft = localStorage.getItem("newsWizardDraft");
     if (savedDraft) setText(savedDraft);
@@ -29,10 +31,83 @@ export default function BanglaNewsEditor() {
     return () => clearTimeout(timer);
   }, [text]);
 
-  const checkSpelling = async () => { /* Same as your existing code */ };
-  const rewriteNews = async () => { /* Same as your existing code */ };
-  const fixAll = () => { /* Same as your existing code */ };
-  const fixOne = (index) => { /* Same as your existing code */ };
+  const checkSpelling = async () => {
+    if (!text.trim()) return;
+    setLoading(true);
+    setLoadingType("spell");
+    
+    try {
+      const response = await fetch("/api/check-spelling", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      const data = await response.json();
+      
+      setErrors(data.errors || []);
+      setActiveTab("ভুল");
+    } catch (error) {
+      console.error("Spell check failed:", error);
+      alert("বানান পরীক্ষা করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
+    } finally {
+      setLoading(false);
+      setLoadingType("");
+    }
+  };
+
+  const rewriteNews = async () => {
+    if (!text.trim()) return;
+    setLoading(true);
+    setLoadingType("rewrite");
+    
+    try {
+      const response = await fetch("/api/rewrite-news", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      const data = await response.json();
+      
+      setRewritten(data.rewritten || "");
+      setEnglish(data.english || "");
+      setChanges(data.changes || []);
+      setActiveTab("সম্পাদিত");
+    } catch (error) {
+      console.error("Rewrite failed:", error);
+      alert("সম্পাদনা করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
+    } finally {
+      setLoading(false);
+      setLoadingType("");
+    }
+  };
+
+  const fixAll = () => {
+    let newText = text;
+    errors.forEach(err => {
+      newText = newText.replace(new RegExp(err.word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), 'g'), err.suggestion);
+    });
+    setText(newText);
+    setErrors([]);
+    setActiveTab("সংবাদ");
+  };
+
+  const fixOne = (index) => {
+    const err = errors[index];
+    const newText = text.replace(new RegExp(err.word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), 'g'), err.suggestion);
+    setText(newText);
+    const newErrors = [...errors];
+    newErrors.splice(index, 1);
+    setErrors(newErrors);
+    if (newErrors.length === 0) {
+      setActiveTab("সংবাদ");
+    }
+  };
+
+  const handleCopy = (textToCopy) => {
+    navigator.clipboard.writeText(textToCopy);
+    setCopyMsg("কপি করা হয়েছে!");
+    setTimeout(() => setCopyMsg(""), 2000);
+  };
 
   const renderHighlighted = () => {
     if (!errors.length) return text;
@@ -70,14 +145,22 @@ export default function BanglaNewsEditor() {
             />
 
             <div className={styles.actionBar}>
-              <button className={`${styles.btn} ${styles.btnSpell}`} onClick={checkSpelling} disabled={loading || !text.trim()}>
+              <button 
+                className={`${styles.btn} ${styles.btnSpell} ${loading || !text.trim() ? styles.btnDisabled : ""}`} 
+                onClick={checkSpelling} 
+                disabled={loading || !text.trim()}
+              >
                 {loadingType === "spell" ? "পরীক্ষা চলছে…" : "✓ বানান পরীক্ষা"}
               </button>
-              <button className={`${styles.btn} ${styles.btnEdit}`} onClick={rewriteNews} disabled={loading || !text.trim()}>
+              
+              <button 
+                className={`${styles.btn} ${styles.btnEdit} ${loading || !text.trim() ? styles.btnDisabled : ""}`} 
+                onClick={rewriteNews} 
+                disabled={loading || !text.trim()}
+              >
                 {loadingType === "rewrite" ? "সম্পাদনা চলছে…" : "✎ সম্পাদনা + ইংরেজি"}
               </button>
               
-              {/* 🔥 Focus Mode Toggle */}
               <button className={`${styles.btn} ${styles.btnFocus}`} onClick={() => setFocusMode(!focusMode)}>
                 {focusMode ? "⛶ সাধারণ মোড" : "🔍 ফোকাস মোড"}
               </button>
@@ -86,45 +169,146 @@ export default function BanglaNewsEditor() {
 
           {/* Tabs */}
           <div className={styles.tabs}>
-            <button className={`${styles.tab} ${activeTab === "সংবাদ" ? styles.tabActive : ""}`} onClick={() => setActiveTab("সংবাদ")}>
+            <button 
+              className={`${styles.tab} ${activeTab === "সংবাদ" ? styles.tabActive : ""}`} 
+              onClick={() => setActiveTab("সংবাদ")}
+            >
               📄 সংবাদ
             </button>
-            <button className={`${styles.tab} ${activeTab === "ভুল" ? styles.tabActive : ""}`} onClick={() => setActiveTab("ভুল")}>
+            <button 
+              className={`${styles.tab} ${activeTab === "ভুল" ? styles.tabActive : ""}`} 
+              onClick={() => setActiveTab("ভুল")}
+            >
               ভুল {errors.length > 0 && `(${errors.length})`}
             </button>
             {rewritten && (
-              <button className={`${styles.tab} ${activeTab === "সম্পাদিত" ? styles.tabActive : ""}`} onClick={() => setActiveTab("সম্পাদিত")}>
+              <button 
+                className={`${styles.tab} ${activeTab === "সম্পাদিত" ? styles.tabActive : ""}`} 
+                onClick={() => setActiveTab("সম্পাদিত")}
+              >
                 ✨ সম্পাদিত
               </button>
             )}
           </div>
 
+          {/* Panel Content */}
           <div className={styles.panel}>
             {activeTab === "সংবাদ" && (
                <div className={styles.previewBox} dangerouslySetInnerHTML={{ __html: renderHighlighted() }} />
             )}
-            {/* The rest of your Tabs logic stays exactly the same */}
+
+            {activeTab === "ভুল" && (
+              <div>
+                {errors.length === 0 ? (
+                  <p className={styles.previewBox}>কোনো বানান ভুল পাওয়া যায়নি।</p>
+                ) : (
+                  <>
+                    <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
+                       <button className={`${styles.btn} ${styles.btnOutline}`} onClick={fixAll}>
+                         সব একসাথে ঠিক করুন
+                       </button>
+                    </div>
+                    <div className={styles.errorList}>
+                      {errors.map((err, idx) => (
+                        <div key={idx} className={styles.errorItem}>
+                          <div className={styles.errorDetails}>
+                            <div>
+                              <span className={styles.errorWord}>{err.word}</span>
+                              <span> → </span>
+                              <span className={styles.errorSuggestion}>{err.suggestion}</span>
+                            </div>
+                            <div className={styles.errorRule}>{err.rule}</div>
+                          </div>
+                          <button className={`${styles.btn} ${styles.btnOutline}`} onClick={() => fixOne(idx)}>
+                            ঠিক করুন
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
+            {activeTab === "সম্পাদিত" && rewritten && (
+              <div>
+                <div className={styles.resultSection}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                     <h3 className={styles.resultTitle}>সম্পাদিত বাংলা</h3>
+                     <button className={`${styles.btn} ${styles.btnOutline}`} onClick={() => handleCopy(rewritten)}>
+                        {copyMsg || "কপি করুন"}
+                     </button>
+                  </div>
+                  <div className={styles.previewBox}>{rewritten}</div>
+                </div>
+
+                {english && (
+                  <div className={styles.resultSection}>
+                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                       <h3 className={styles.resultTitle}>English Translation</h3>
+                       <button className={`${styles.btn} ${styles.btnOutline}`} onClick={() => handleCopy(english)}>
+                          {copyMsg || "Copy"}
+                       </button>
+                     </div>
+                    <div className={styles.previewBox}>{english}</div>
+                  </div>
+                )}
+
+                {changes && changes.length > 0 && (
+                  <div className={styles.resultSection}>
+                    <h3 className={styles.resultTitle}>পরিবর্তন সমূহ</h3>
+                    <ul className={styles.changesList}>
+                      {changes.map((change, idx) => (
+                        <li key={idx}>{change}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
-        {/* 🔥 Mobile Collapsible Sidebar */}
+        {/* Sidebar */}
         <aside className={styles.sidebar}>
           <details className={styles.sideCard} open>
             <summary>📊 পরিসংখ্যান</summary>
             <div className={styles.sideCardBody}>
-               {/* Stats content */}
-               <p>শব্দ: {wordCount}</p>
+               <div className={styles.statRow}>
+                 <span>শব্দ সংখ্যা:</span>
+                 <strong>{wordCount}</strong>
+               </div>
+               <div className={styles.statRow}>
+                 <span>অক্ষর সংখ্যা:</span>
+                 <strong>{charCount}</strong>
+               </div>
+               <div className={styles.statRow}>
+                 <span>বানান ভুল:</span>
+                 <strong style={{ color: 'var(--accent)' }}>{errors.length}</strong>
+               </div>
             </div>
           </details>
 
           <details className={styles.sideCard}>
             <summary>📖 বানান নির্দেশিকা</summary>
             <div className={styles.sideCardBody}>
-              {/* Rules content */}
+              <ul style={{ paddingLeft: '1.2rem', color: 'var(--text-muted)' }}>
+                <li style={{ marginBottom: '0.5rem' }}>বিদেশি শব্দে ই-কার ব্যবহার হয় (যেমন: অ্যাকাডেমি, চাকরি)।</li>
+                <li style={{ marginBottom: '0.5rem' }}>তৎসম শব্দ ছাড়া 'ণ' ব্যবহৃত হয় না (যেমন: গভর্নর, হর্ন)।</li>
+                <li>'শ্রেণি', 'মূর্তি' ইত্যাদিতে ই-কার বসবে।</li>
+              </ul>
             </div>
           </details>
         </aside>
       </main>
+
+      {/* Footer */}
+      <footer className={styles.footer}>
+        <p>
+          Built by <strong>Towfiqul Alam</strong> | Contact:{" "}
+          <a href="mailto:towfiqul.pro@gmail.com">towfiqul.pro@gmail.com</a>
+        </p>
+      </footer>
     </div>
   );
 }
