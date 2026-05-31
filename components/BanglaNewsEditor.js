@@ -8,7 +8,11 @@ export default function BanglaNewsEditor() {
   const [errors, setErrors] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingType, setLoadingType] = useState("");
-  const [activeTab, setActiveTab] = useState("সংবাদ");
+  
+  // Tab and UI states
+  const [activeTab, setActiveTab] = useState(""); // Empty initially so the panel stays hidden
+  const [isClean, setIsClean] = useState(false);  // Tracks if the text is completely error-free
+  
   const [rewritten, setRewritten] = useState("");
   const [english, setEnglish] = useState("");
   const [changes, setChanges] = useState([]);
@@ -18,6 +22,7 @@ export default function BanglaNewsEditor() {
   const wordCount = text.split(/\s+/).filter(Boolean).length;
   const charCount = text.length;
 
+  // Auto-Save to Local Storage
   useEffect(() => {
     const savedDraft = localStorage.getItem("newsWizardDraft");
     if (savedDraft) setText(savedDraft);
@@ -29,6 +34,11 @@ export default function BanglaNewsEditor() {
     }, 1000);
     return () => clearTimeout(timer);
   }, [text]);
+
+  const handleTextChange = (e) => {
+    setText(e.target.value);
+    setIsClean(false); // Reset clean state if user edits the text manually
+  };
 
   const checkSpelling = async () => {
     if (!text.trim()) return;
@@ -52,8 +62,11 @@ export default function BanglaNewsEditor() {
       setErrors(errorsList);
       
       if (errorsList.length === 0) {
+        setIsClean(true);
+        setActiveTab("শুদ্ধ");
         alert(data.summary || "কোনো বানান ভুল পাওয়া যায়নি।");
       } else {
+        setIsClean(false);
         setActiveTab("ভুল");
       }
       
@@ -114,18 +127,22 @@ export default function BanglaNewsEditor() {
     });
     setText(newText);
     setErrors([]);
-    setActiveTab("সংবাদ");
+    setIsClean(true);
+    setActiveTab("শুদ্ধ");
   };
 
   const fixOne = (index) => {
     const err = errors[index];
     const newText = text.replace(new RegExp(err.word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), 'g'), err.suggestion);
     setText(newText);
+    
     const newErrors = [...errors];
     newErrors.splice(index, 1);
     setErrors(newErrors);
+    
     if (newErrors.length === 0) {
-      setActiveTab("সংবাদ");
+      setIsClean(true);
+      setActiveTab("শুদ্ধ");
     }
   };
 
@@ -134,18 +151,6 @@ export default function BanglaNewsEditor() {
     navigator.clipboard.writeText(textToCopy);
     setCopyMsg("✓ কপি করা হয়েছে!");
     setTimeout(() => setCopyMsg(""), 2000);
-  };
-
-  const renderHighlighted = () => {
-    if (!errors.length) return text;
-    let html = text;
-    errors.forEach((e) => {
-      html = html.replace(
-        new RegExp(e.word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g"),
-        `<mark class="${styles.errorHighlight}" title="${e.suggestion} (${e.rule})">${e.word}</mark>`
-      );
-    });
-    return html;
   };
 
   return (
@@ -166,7 +171,7 @@ export default function BanglaNewsEditor() {
             <textarea
               className={styles.textarea}
               value={text}
-              onChange={(e) => setText(e.target.value)}
+              onChange={handleTextChange}
               placeholder="এখানে সংবাদ লিখুন..."
             />
 
@@ -193,112 +198,124 @@ export default function BanglaNewsEditor() {
             </div>
           </div>
 
-          <div className={styles.tabs}>
-            <button 
-              className={`${styles.tab} ${activeTab === "সংবাদ" ? styles.tabActive : ""}`} 
-              onClick={() => setActiveTab("সংবাদ")}
-            >
-              📄 সংবাদ
-            </button>
-            <button 
-              className={`${styles.tab} ${activeTab === "ভুল" ? styles.tabActive : ""}`} 
-              onClick={() => setActiveTab("ভুল")}
-            >
-              ভুল {errors.length > 0 && `(${errors.length})`}
-            </button>
-            {rewritten && (
-              <button 
-                className={`${styles.tab} ${activeTab === "সম্পাদিত" ? styles.tabActive : ""}`} 
-                onClick={() => setActiveTab("সম্পাদিত")}
-              >
-                ✨ সম্পাদিত
-              </button>
-            )}
-          </div>
+          {/* Only render Tabs and Panel if an action has been taken */}
+          {activeTab && (
+            <>
+              <div className={styles.tabs}>
+                {errors.length > 0 && (
+                  <button 
+                    className={`${styles.tab} ${activeTab === "ভুল" ? styles.tabActive : ""}`} 
+                    onClick={() => setActiveTab("ভুল")}
+                  >
+                    ভুল {errors.length > 0 && `(${errors.length})`}
+                  </button>
+                )}
+                
+                {isClean && (
+                  <button 
+                    className={`${styles.tab} ${activeTab === "শুদ্ধ" ? styles.tabActive : ""}`} 
+                    onClick={() => setActiveTab("শুদ্ধ")}
+                  >
+                    ✅ শুদ্ধ
+                  </button>
+                )}
 
-          <div className={styles.panel}>
-            {activeTab === "সংবাদ" && (
-               <div className={styles.resultSection}>
-                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h3 className={styles.resultTitle} style={{ margin: 0, borderBottom: 'none' }}>মূল পাঠ</h3>
-                    <button className={`${styles.btn} ${styles.btnOutline}`} onClick={() => handleCopy(text)}>
-                       {copyMsg || "📋 কপি করুন"}
-                    </button>
-                 </div>
-                 <div className={styles.previewBox} dangerouslySetInnerHTML={{ __html: renderHighlighted() }} />
-               </div>
-            )}
-
-            {activeTab === "ভুল" && (
-              <div>
-                {errors.length === 0 ? (
-                  <p className={styles.previewBox}>কোনো বানান ভুল পাওয়া যায়নি।</p>
-                ) : (
-                  <>
-                    <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
-                       <button className={`${styles.btn} ${styles.btnOutline}`} onClick={fixAll}>
-                         সব একসাথে ঠিক করুন
-                       </button>
-                    </div>
-                    <div className={styles.errorList}>
-                      {errors.map((err, idx) => (
-                        <div key={idx} className={styles.errorItem}>
-                          <div className={styles.errorDetails}>
-                            <div>
-                              <span className={styles.errorWord}>{err.word}</span>
-                              <span> → </span>
-                              <span className={styles.errorSuggestion}>{err.suggestion}</span>
-                            </div>
-                            <div className={styles.errorRule}>{err.rule}</div>
-                          </div>
-                          <button className={`${styles.btn} ${styles.btnOutline}`} onClick={() => fixOne(idx)}>
-                            ঠিক করুন
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </>
+                {rewritten && (
+                  <button 
+                    className={`${styles.tab} ${activeTab === "সম্পাদিত" ? styles.tabActive : ""}`} 
+                    onClick={() => setActiveTab("সম্পাদিত")}
+                  >
+                    ✨ সম্পাদিত
+                  </button>
                 )}
               </div>
-            )}
 
-            {activeTab === "সম্পাদিত" && rewritten && (
-              <div>
-                <div className={styles.resultSection}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                     <h3 className={styles.resultTitle}>সম্পাদিত বাংলা</h3>
-                     <button className={`${styles.btn} ${styles.btnOutline}`} onClick={() => handleCopy(rewritten)}>
-                        {copyMsg || "📋 কপি করুন"}
-                     </button>
-                  </div>
-                  <div className={styles.previewBox}>{rewritten}</div>
-                </div>
-
-                {english && (
-                  <div className={styles.resultSection}>
-                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                       <h3 className={styles.resultTitle}>English Translation</h3>
-                       <button className={`${styles.btn} ${styles.btnOutline}`} onClick={() => handleCopy(english)}>
-                          {copyMsg || "📋 Copy"}
-                       </button>
+              <div className={styles.panel}>
+                {activeTab === "শুদ্ধ" && (
+                   <div className={styles.resultSection}>
+                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                        <h3 className={styles.resultTitle} style={{ margin: 0, borderBottom: 'none' }}>শুদ্ধ পাঠ</h3>
+                        <button className={`${styles.btn} ${styles.btnOutline}`} onClick={() => handleCopy(text)}>
+                           {copyMsg || "📋 কপি করুন"}
+                        </button>
                      </div>
-                    <div className={styles.previewBox}>{english}</div>
+                     {/* Renders the pure, corrected text without any red highlights */}
+                     <div className={styles.previewBox}>{text}</div>
+                   </div>
+                )}
+
+                {activeTab === "ভুল" && (
+                  <div>
+                    {errors.length === 0 ? (
+                      <p className={styles.previewBox}>কোনো বানান ভুল পাওয়া যায়নি।</p>
+                    ) : (
+                      <>
+                        <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
+                           <button className={`${styles.btn} ${styles.btnOutline}`} onClick={fixAll}>
+                             সব একসাথে ঠিক করুন
+                           </button>
+                        </div>
+                        <div className={styles.errorList}>
+                          {errors.map((err, idx) => (
+                            <div key={idx} className={styles.errorItem}>
+                              <div className={styles.errorDetails}>
+                                <div>
+                                  <span className={styles.errorWord}>{err.word}</span>
+                                  <span> → </span>
+                                  <span className={styles.errorSuggestion}>{err.suggestion}</span>
+                                </div>
+                                <div className={styles.errorRule}>{err.rule}</div>
+                              </div>
+                              <button className={`${styles.btn} ${styles.btnOutline}`} onClick={() => fixOne(idx)}>
+                                ঠিক করুন
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
 
-                {changes && changes.length > 0 && (
-                  <div className={styles.resultSection}>
-                    <h3 className={styles.resultTitle}>পরিবর্তন সমূহ</h3>
-                    <ul className={styles.changesList}>
-                      {changes.map((change, idx) => (
-                        <li key={idx}>{change}</li>
-                      ))}
-                    </ul>
+                {activeTab === "সম্পাদিত" && rewritten && (
+                  <div>
+                    <div className={styles.resultSection}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                         <h3 className={styles.resultTitle}>সম্পাদিত বাংলা</h3>
+                         <button className={`${styles.btn} ${styles.btnOutline}`} onClick={() => handleCopy(rewritten)}>
+                            {copyMsg || "📋 কপি করুন"}
+                         </button>
+                      </div>
+                      <div className={styles.previewBox}>{rewritten}</div>
+                    </div>
+
+                    {english && (
+                      <div className={styles.resultSection}>
+                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                           <h3 className={styles.resultTitle}>English Translation</h3>
+                           <button className={`${styles.btn} ${styles.btnOutline}`} onClick={() => handleCopy(english)}>
+                              {copyMsg || "📋 Copy"}
+                           </button>
+                         </div>
+                        <div className={styles.previewBox}>{english}</div>
+                      </div>
+                    )}
+
+                    {changes && changes.length > 0 && (
+                      <div className={styles.resultSection}>
+                        <h3 className={styles.resultTitle}>পরিবর্তন সমূহ</h3>
+                        <ul className={styles.changesList}>
+                          {changes.map((change, idx) => (
+                            <li key={idx}>{change}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
-            )}
-          </div>
+            </>
+          )}
         </div>
 
         <aside className={styles.sidebar}>
