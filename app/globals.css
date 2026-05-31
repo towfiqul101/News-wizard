@@ -1,46 +1,38 @@
-/* ============================================================ */
-/* News Wizard — Global Styles + CSS Variables */
-/* ============================================================ */
-
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Source+Sans+3:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600&family=Noto+Serif+Bengali:wght@400;600;700;900&family=Playfair+Display:wght@700;900&display=swap');
 
 :root {
   --ink: #1a1a2e;
   --ink-soft: #2d2d44;
-  --cream: #faf8f4;
+  --cream: #fcfbf9; /* Slightly brighter for premium feel */
   --cream-dark: #f0ede6;
   --accent: #c0392b;
   --accent-light: #e74c3c;
   --gold: #d4a017;
   --teal: #0d7377;
   --teal-light: #14a085;
-  --border: #ddd8cc;
+  --border: #e6e2d8;
   --border-dark: #b8b0a0;
   --text-muted: #7a7265;
-  --shadow-sm: 0 2px 8px rgba(26,26,46,0.08);
-  --shadow-md: 0 8px 32px rgba(26,26,46,0.12);
-  --shadow-lg: 0 20px 60px rgba(26,26,46,0.18);
-  --radius: 4px;
-  --radius-lg: 8px;
+  --shadow-sm: 0 2px 8px rgba(26,26,46,0.04);
+  --shadow-md: 0 8px 32px rgba(26,26,46,0.08);
+  --radius: 6px;
+  --radius-lg: 12px;
+  
+  --font-heading: 'Noto Serif Bengali', 'Playfair Display', serif;
+  --font-body: 'Hind Siliguri', sans-serif;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
-
 html { scroll-behavior: smooth; }
 
 body {
-  font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: var(--font-body);
   background: var(--cream);
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
 }
 
-::selection {
-  background: var(--accent);
-  color: white;
-}
-
-::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: var(--cream-dark); }
+::selection { background: var(--teal-light); color: white; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: var(--ink-soft); }
