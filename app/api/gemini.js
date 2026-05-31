@@ -39,7 +39,8 @@ If no major rewrite is needed, just improve the flow and provide the translation
 
 export async function callGemini(systemPrompt, userText) {
   const apiKey = process.env.GEMINI_API_KEY;
-  const GEMINI_API_URL = "[https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent](https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent)";
+  // This line is fixed: No markdown brackets around the URL
+  const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
   
   const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
     method: "POST",
@@ -61,7 +62,6 @@ export async function callGemini(systemPrompt, userText) {
   
   let cleaned = rawText.trim();
   
-  // Bulletproof way to create "```" without breaking the Vercel compiler
   const fence = String.fromCharCode(96, 96, 96); 
   
   if (cleaned.startsWith(fence + "json")) {
