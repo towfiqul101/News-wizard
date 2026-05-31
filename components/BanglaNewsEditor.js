@@ -18,7 +18,6 @@ export default function BanglaNewsEditor() {
   const wordCount = text.split(/\s+/).filter(Boolean).length;
   const charCount = text.length;
 
-  // Auto-Save to Local Storage
   useEffect(() => {
     const savedDraft = localStorage.getItem("newsWizardDraft");
     if (savedDraft) setText(savedDraft);
@@ -151,12 +150,11 @@ export default function BanglaNewsEditor() {
 
   return (
     <div className={`${styles.page} ${focusMode ? styles.focusMode : ""}`}>
-      {/* Masthead */}
       <header className={styles.masthead}>
         <div className={styles.mastheadInner}>
           <div className={styles.logo}>
-            <span className={styles.logoMark}>News<span>Wizard</span></span>
-            <span className={styles.logoSub}>| বাংলা সংবাদ সম্পাদক</span>
+            <span className={styles.logoMark}>শুদ্ধি</span>
+            <span className={styles.logoSub}>| বানান সম্পাদনা</span>
           </div>
         </div>
       </header>
@@ -195,7 +193,6 @@ export default function BanglaNewsEditor() {
             </div>
           </div>
 
-          {/* Tabs */}
           <div className={styles.tabs}>
             <button 
               className={`${styles.tab} ${activeTab === "সংবাদ" ? styles.tabActive : ""}`} 
@@ -219,7 +216,6 @@ export default function BanglaNewsEditor() {
             )}
           </div>
 
-          {/* Panel Content */}
           <div className={styles.panel}>
             {activeTab === "সংবাদ" && (
                <div className={styles.resultSection}>
@@ -305,7 +301,6 @@ export default function BanglaNewsEditor() {
           </div>
         </div>
 
-        {/* Sidebar */}
         <aside className={styles.sidebar}>
           <details className={styles.sideCard} open>
             <summary>📊 পরিসংখ্যান</summary>
@@ -331,7 +326,7 @@ export default function BanglaNewsEditor() {
               <ul style={{ paddingLeft: '1.2rem', color: 'var(--text-muted)' }}>
                 <li style={{ marginBottom: '0.5rem' }}>বিদেশি শব্দে ই-কার ব্যবহার হয় (যেমন: অ্যাকাডেমি, চাকরি)।</li>
                 <li style={{ marginBottom: '0.5rem' }}>তৎসম শব্দ ছাড়া 'ণ' ব্যবহৃত হয় না (যেমন: গভর্নর, হর্ন)।</li>
-                <li>'শ্রেণি', 'মূর্তি' ইত্যাদিতে ই-কার বসবে।</li>
+                <li style={{ marginBottom: '0.5rem' }}>'শ্রেণি', 'মূর্তি' ইত্যাদিতে ই-কার বসবে।</li>
                 <li>বাংলা সংবাদে ইংরেজি সংখ্যা (0-9) ব্যবহার করা যাবে না।</li>
               </ul>
             </div>
@@ -339,7 +334,6 @@ export default function BanglaNewsEditor() {
         </aside>
       </main>
 
-      {/* Footer */}
       <footer className={styles.footer}>
         <p>
           Built by <strong>Towfiqul Alam</strong> | Contact:{" "}
