@@ -42,13 +42,23 @@ export default function BanglaNewsEditor() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text }),
       });
+      
       const data = await response.json();
       
-      setErrors(data.errors || []);
-      setActiveTab("ভুল");
+      // Defensive check to catch the array no matter how the API structures it
+      const errorsList = data.errors || (data.result && data.result.errors) || [];
+      
+      setErrors(errorsList);
+      
+      if (errorsList.length === 0) {
+        alert(data.summary || "কোনো বানান ভুল পাওয়া যায়নি।");
+      } else {
+        setActiveTab("ভুল");
+      }
+      
     } catch (error) {
-      console.error("Spell check failed:", error);
-      alert("বানান পরীক্ষা করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
+      console.error("Spell check API failed:", error);
+      alert("বানান পরীক্ষা করতে সমস্যা হয়েছে। API সংযোগ চেক করুন।");
     } finally {
       setLoading(false);
       setLoadingType("");
@@ -66,15 +76,27 @@ export default function BanglaNewsEditor() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text }),
       });
+      
       const data = await response.json();
       
-      setRewritten(data.rewritten || "");
-      setEnglish(data.english || "");
-      setChanges(data.changes || []);
-      setActiveTab("সম্পাদিত");
+      // Defensive checks for the rewrite data
+      const newRewritten = data.rewritten || (data.result && data.result.rewritten) || "";
+      const newEnglish = data.english || (data.result && data.result.english) || "";
+      const newChanges = data.changes || (data.result && data.result.changes) || [];
+      
+      setRewritten(newRewritten);
+      setEnglish(newEnglish);
+      setChanges(newChanges);
+      
+      if (newRewritten) {
+        setActiveTab("সম্পাদিত");
+      } else {
+        alert("সম্পাদনা করা সম্ভব হয়নি।");
+      }
+      
     } catch (error) {
-      console.error("Rewrite failed:", error);
-      alert("সম্পাদনা করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
+      console.error("Rewrite API failed:", error);
+      alert("সম্পাদনা করতে সমস্যা হয়েছে। API সংযোগ চেক করুন।");
     } finally {
       setLoading(false);
       setLoadingType("");
