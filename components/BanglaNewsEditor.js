@@ -10,8 +10,8 @@ export default function BanglaNewsEditor() {
   const [loadingType, setLoadingType] = useState("");
   
   // Tab and UI states
-  const [activeTab, setActiveTab] = useState(""); // Empty initially so the panel stays hidden
-  const [isClean, setIsClean] = useState(false);  // Tracks if the text is completely error-free
+  const [activeTab, setActiveTab] = useState(""); 
+  const [isClean, setIsClean] = useState(false);  
   
   const [rewritten, setRewritten] = useState("");
   const [english, setEnglish] = useState("");
@@ -37,7 +37,7 @@ export default function BanglaNewsEditor() {
 
   const handleTextChange = (e) => {
     setText(e.target.value);
-    setIsClean(false); // Reset clean state if user edits the text manually
+    setIsClean(false); 
   };
 
   const checkSpelling = async () => {
@@ -120,6 +120,13 @@ export default function BanglaNewsEditor() {
     }
   };
 
+  // Allow user to manually type and edit the AI's suggestion
+  const handleSuggestionChange = (index, newSuggestion) => {
+    const newErrors = [...errors];
+    newErrors[index].suggestion = newSuggestion;
+    setErrors(newErrors);
+  };
+
   const fixAll = () => {
     let newText = text;
     errors.forEach(err => {
@@ -146,11 +153,35 @@ export default function BanglaNewsEditor() {
     }
   };
 
+  // Simply removes the error from the list without modifying the text
+  const ignoreOne = (index) => {
+    const newErrors = [...errors];
+    newErrors.splice(index, 1);
+    setErrors(newErrors);
+    
+    if (newErrors.length === 0) {
+      setIsClean(true);
+      setActiveTab("শুদ্ধ");
+    }
+  };
+
   const handleCopy = (textToCopy) => {
     if (!textToCopy.trim()) return;
     navigator.clipboard.writeText(textToCopy);
     setCopyMsg("✓ কপি করা হয়েছে!");
     setTimeout(() => setCopyMsg(""), 2000);
+  };
+
+  const renderHighlighted = () => {
+    if (!errors.length) return text;
+    let html = text;
+    errors.forEach((e) => {
+      html = html.replace(
+        new RegExp(e.word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g"),
+        `<mark class="${styles.errorHighlight}" title="${e.suggestion} (${e.rule})">${e.word}</mark>`
+      );
+    });
+    return html;
   };
 
   return (
@@ -239,7 +270,6 @@ export default function BanglaNewsEditor() {
                            {copyMsg || "📋 কপি করুন"}
                         </button>
                      </div>
-                     {/* Renders the pure, corrected text without any red highlights */}
                      <div className={styles.previewBox}>{text}</div>
                    </div>
                 )}
@@ -259,16 +289,27 @@ export default function BanglaNewsEditor() {
                           {errors.map((err, idx) => (
                             <div key={idx} className={styles.errorItem}>
                               <div className={styles.errorDetails}>
-                                <div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                                   <span className={styles.errorWord}>{err.word}</span>
                                   <span> → </span>
-                                  <span className={styles.errorSuggestion}>{err.suggestion}</span>
+                                  <input 
+                                    type="text" 
+                                    value={err.suggestion} 
+                                    onChange={(e) => handleSuggestionChange(idx, e.target.value)}
+                                    className={styles.suggestionInput}
+                                    title="আপনি চাইলে নিজে সম্পাদনা করতে পারেন"
+                                  />
                                 </div>
                                 <div className={styles.errorRule}>{err.rule}</div>
                               </div>
-                              <button className={`${styles.btn} ${styles.btnOutline}`} onClick={() => fixOne(idx)}>
-                                ঠিক করুন
-                              </button>
+                              <div className={styles.errorActions}>
+                                <button className={`${styles.btn} ${styles.btnIgnore}`} onClick={() => ignoreOne(idx)}>
+                                  এড়িয়ে যান
+                                </button>
+                                <button className={`${styles.btn} ${styles.btnOutline}`} onClick={() => fixOne(idx)}>
+                                  ঠিক করুন
+                                </button>
+                              </div>
                             </div>
                           ))}
                         </div>
