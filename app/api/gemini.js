@@ -39,8 +39,9 @@ If no major rewrite is needed, just improve the flow and provide the translation
 
 export async function callGemini(systemPrompt, userText) {
   const apiKey = process.env.GEMINI_API_KEY;
-  // This line is fixed: No markdown brackets around the URL
-  const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+  
+  // Reverted back to gemini-2.0-flash which we know connects properly
+  const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
   
   const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
     method: "POST",
