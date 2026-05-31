@@ -1,13 +1,14 @@
 export const SPELL_CHECK_PROMPT = `You are an expert Bengali proofreader and linguist. Your job is to find spelling errors in the provided Bengali text.
 
 Follow these strict rules based on বাংলা একাডেমি প্রমিত বাংলা বানানের নিয়ম (২০১২) and খটকা বানান অভিধান:
-- ই/ঈ: Foreign loan words use ই-কার, not ঈ-কার (e.g., আমদানি, আলমারি, চাকরি, ইংরেজি).
-- Words like শ্রেণি (not শ্রেণী), মূর্তি, শান্তি, পরিণতি, শক্তি, ব্যক্তি use ই-কার.
-- ণ/ন: Only তৎসম (Sanskrit) words use ণ. Foreign and Bengali words use ন.
-- অধঃ: অধঃপতন is correct, do NOT use অধোপতন.
-- অদ্ভুত is correct, do NOT use অদ্ভূত.
-- যুক্তবর্ণ (Conjuncts): Use ঙ for অঙ্ক, অঙ্গ (not অংক or অংগ).
-- সংখ্যা (Numbers): Bengali news text MUST use Bengali numerals (০-৯). If you find ANY English numerals (0, 1, 2, 3, 4, 5, 6, 7, 8, 9) inside the Bengali text, flag them as errors and suggest the exact Bengali equivalent (e.g., "15" -> "১৫", "7" -> "৭").
+১. ই-কার/উ-কার: তৎসম, দেশি ও বিদেশি শব্দে ই-কার বা উ-কার হবে (যেমন: একাডেমি, পল্লি, সরকারি, কাহিনি, ইংরেজি, দিঘি, শাড়ি, অদ্ভুত)।
+২. ণ/ন ও ষ/স/শ: বিদেশি শব্দে 'ণ' বা 'ষ' বসবে না, 'ন' ও 'স/শ' বসবে (যেমন: গভর্নর, হর্ন, স্টল, স্টেশন, মাস্টার, কর্নার, মডার্ন)।
+৩. রেফ: রেফের পর ব্যঞ্জনবর্ণের দ্বিত্ব হবে না (যেমন: অর্জন, কর্ম, সূর্য, কার্যালয়)।
+৪. বিসর্গ (ঃ): শব্দের শেষে বিসর্গ থাকবে না (যেমন: কার্যত, মূলত, প্রধানত)।
+৫. ঙ/ং: সন্ধির ক্ষেত্রে ং হবে (অহংকার, সংগীত)। সন্ধিবদ্ধ না হলে ঙ হবে (অঙ্ক, অঙ্গ, আকাঙ্ক্ষা, আতঙ্ক)।
+৬. কি/কী: হ্যাঁ/না উত্তরের প্রশ্নে 'কি' এবং বর্ণনামূলক প্রশ্নে 'কী' বসবে।
+৭. খটকা বানান: অদ্ভুত (অদ্ভূত নয়), উপযুক্ত (উপযোগী নয়), ইতিমধ্যে (ইতোমধ্যে নয়), ঊর্ধ্বতন (উর্ধতন নয়)।
+৮. সংখ্যা (Numbers): Bengali news text MUST use Bengali numerals (০-৯). If you find ANY English numerals (0, 1, 2, 3, 4, 5, 6, 7, 8, 9) inside the Bengali text, flag them as errors and suggest the exact Bengali equivalent (e.g., "15" -> "১৫", "7" -> "৭").
 
 Return ONLY a valid JSON object in this exact format:
 {
@@ -41,7 +42,6 @@ If no major rewrite is needed, just improve the flow and provide the translation
 export async function callGemini(systemPrompt, userText) {
   const apiKey = process.env.GEMINI_API_KEY;
   
-  // Locked in to gemini-3.5-flash for stable free tier access
   const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent";
   
   const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
