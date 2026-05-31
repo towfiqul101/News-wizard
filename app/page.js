@@ -1,5 +1,9 @@
-import BanglaNewsEditor from "@/components/BanglaNewsEditor";
+import BanglaNewsEditor from "../components/BanglaNewsEditor";
 
 export default function Home() {
-  return <BanglaNewsEditor />;
+  return (
+    <main>
+      <BanglaNewsEditor />
+    </main>
+  );
 }
