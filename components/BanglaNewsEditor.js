@@ -44,7 +44,6 @@ export default function BanglaNewsEditor() {
       });
       
       const data = await response.json();
-      console.log("Spell Check API Response:", data);
       
       if (!response.ok) {
         throw new Error(data.error || `Server returned ${response.status}`);
@@ -81,7 +80,6 @@ export default function BanglaNewsEditor() {
       });
       
       const data = await response.json();
-      console.log("Rewrite API Response:", data);
       
       if (!response.ok) {
          throw new Error(data.error || `Server returned ${response.status}`);
@@ -133,8 +131,9 @@ export default function BanglaNewsEditor() {
   };
 
   const handleCopy = (textToCopy) => {
+    if (!textToCopy.trim()) return;
     navigator.clipboard.writeText(textToCopy);
-    setCopyMsg("কপি করা হয়েছে!");
+    setCopyMsg("✓ কপি করা হয়েছে!");
     setTimeout(() => setCopyMsg(""), 2000);
   };
 
@@ -223,7 +222,15 @@ export default function BanglaNewsEditor() {
           {/* Panel Content */}
           <div className={styles.panel}>
             {activeTab === "সংবাদ" && (
-               <div className={styles.previewBox} dangerouslySetInnerHTML={{ __html: renderHighlighted() }} />
+               <div className={styles.resultSection}>
+                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h3 className={styles.resultTitle} style={{ margin: 0, borderBottom: 'none' }}>মূল পাঠ</h3>
+                    <button className={`${styles.btn} ${styles.btnOutline}`} onClick={() => handleCopy(text)}>
+                       {copyMsg || "📋 কপি করুন"}
+                    </button>
+                 </div>
+                 <div className={styles.previewBox} dangerouslySetInnerHTML={{ __html: renderHighlighted() }} />
+               </div>
             )}
 
             {activeTab === "ভুল" && (
@@ -265,7 +272,7 @@ export default function BanglaNewsEditor() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                      <h3 className={styles.resultTitle}>সম্পাদিত বাংলা</h3>
                      <button className={`${styles.btn} ${styles.btnOutline}`} onClick={() => handleCopy(rewritten)}>
-                        {copyMsg || "কপি করুন"}
+                        {copyMsg || "📋 কপি করুন"}
                      </button>
                   </div>
                   <div className={styles.previewBox}>{rewritten}</div>
@@ -276,7 +283,7 @@ export default function BanglaNewsEditor() {
                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                        <h3 className={styles.resultTitle}>English Translation</h3>
                        <button className={`${styles.btn} ${styles.btnOutline}`} onClick={() => handleCopy(english)}>
-                          {copyMsg || "Copy"}
+                          {copyMsg || "📋 Copy"}
                        </button>
                      </div>
                     <div className={styles.previewBox}>{english}</div>
@@ -325,6 +332,7 @@ export default function BanglaNewsEditor() {
                 <li style={{ marginBottom: '0.5rem' }}>বিদেশি শব্দে ই-কার ব্যবহার হয় (যেমন: অ্যাকাডেমি, চাকরি)।</li>
                 <li style={{ marginBottom: '0.5rem' }}>তৎসম শব্দ ছাড়া 'ণ' ব্যবহৃত হয় না (যেমন: গভর্নর, হর্ন)।</li>
                 <li>'শ্রেণি', 'মূর্তি' ইত্যাদিতে ই-কার বসবে।</li>
+                <li>বাংলা সংবাদে ইংরেজি সংখ্যা (0-9) ব্যবহার করা যাবে না।</li>
               </ul>
             </div>
           </details>
