@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600&family=Noto+Serif+Bengali:wght@400;600;700;900&family=Playfair+Display:wght@700;900&display=swap');
+
 /* ============ Page & Focus Mode ============ */
 .page {
   min-height: 100vh;
@@ -123,6 +125,9 @@
 .btnOutline:hover { background: var(--cream-dark); }
 .btnDisabled { opacity: 0.6; cursor: not-allowed; }
 
+.btnIgnore { background: transparent; border: 1px solid transparent; color: var(--text-muted); }
+.btnIgnore:hover { background: var(--cream-dark); color: var(--ink); }
+
 /* ============ Mobile Sticky Bar ============ */
 @media (max-width: 768px) {
   .actionBar {
@@ -221,6 +226,13 @@
   flex: 1;
 }
 
+.errorActions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
 .errorWord {
   color: var(--accent);
   font-weight: bold;
@@ -228,15 +240,29 @@
   margin-right: 0.5rem;
 }
 
-.errorSuggestion {
+.suggestionInput {
+  padding: 0.25rem 0.5rem;
+  border: 1px dashed var(--border-dark);
+  border-radius: var(--radius);
+  font-family: var(--font-body);
+  font-size: 1.05rem;
   color: var(--teal);
-  font-weight: bold;
+  font-weight: 600;
+  background: white;
+  width: 140px;
+  transition: all 0.2s ease;
+}
+.suggestionInput:focus {
+  outline: none;
+  border-style: solid;
+  border-color: var(--teal);
+  box-shadow: 0 0 0 2px rgba(13, 115, 119, 0.1);
 }
 
 .errorRule {
   font-size: 0.9rem;
   color: var(--text-muted);
-  margin-top: 0.25rem;
+  margin-top: 0.5rem;
 }
 
 .resultSection {
