@@ -58,11 +58,21 @@ export async function callGemini(systemPrompt, userText) {
     throw new Error(data.error?.message || "Failed to fetch from Gemini API");
   }
   
-  const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
   
-  // Strip markdown fences if Gemini includes them
-  const cleaned = rawText.replace(/^```json\s*/i, "").replace(/\s*
-```$/i, "").trim();
+  // Use string methods instead of RegEx to avoid compilation errors
+  let cleaned = rawText.trim();
   
-  return JSON.parse(cleaned);
+  if (cleaned.startsWith("```json")) {
+    cleaned = cleaned.substring(7);
+  } else if (cleaned.startsWith("
+```")) {
+    cleaned = cleaned.substring(3);
+  }
+  
+  if (cleaned.endsWith("```")) {
+    cleaned = cleaned.substring(0, cleaned.length - 3);
+  }
+  
+  return JSON.parse(cleaned.trim());
 }
