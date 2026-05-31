@@ -7,9 +7,8 @@
 //   4. ১৫০০+ বাংলা বাগধারা
 // ============================================================
 
-const GEMINI_API_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
-
+```javascript
+   const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
 // ============================================================
 // SPELL CHECK SYSTEM PROMPT
 // ============================================================
