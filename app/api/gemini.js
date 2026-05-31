@@ -39,8 +39,7 @@ If no major rewrite is needed, just improve the flow and provide the translation
 
 export async function callGemini(systemPrompt, userText) {
   const apiKey = process.env.GEMINI_API_KEY;
-  // Switched to 1.5-flash to avoid the 429 Quota Exceeded error
-  const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+  const GEMINI_API_URL = "[https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent](https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent)";
   
   const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
     method: "POST",
@@ -60,17 +59,18 @@ export async function callGemini(systemPrompt, userText) {
   
   const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
   
-  // Use string methods instead of RegEx to avoid compilation errors
   let cleaned = rawText.trim();
   
-  if (cleaned.startsWith("```json")) {
+  // Bulletproof way to create "```" without breaking the Vercel compiler
+  const fence = String.fromCharCode(96, 96, 96); 
+  
+  if (cleaned.startsWith(fence + "json")) {
     cleaned = cleaned.substring(7);
-  } else if (cleaned.startsWith("
-```")) {
+  } else if (cleaned.startsWith(fence)) {
     cleaned = cleaned.substring(3);
   }
   
-  if (cleaned.endsWith("```")) {
+  if (cleaned.endsWith(fence)) {
     cleaned = cleaned.substring(0, cleaned.length - 3);
   }
   
