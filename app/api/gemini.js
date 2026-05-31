@@ -40,8 +40,8 @@ If no major rewrite is needed, just improve the flow and provide the translation
 export async function callGemini(systemPrompt, userText) {
   const apiKey = process.env.GEMINI_API_KEY;
   
-  // Using the '-latest' tag ensures access to the 100% Free Tier pool
-  const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent";
+  // Upgraded to gemini-3.5-flash, which supports the 100% Free Tier (no billing required)
+  const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent";
   
   const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
     method: "POST",
