@@ -7,6 +7,7 @@ Follow these strict rules based on বাংলা একাডেমি প্�
 - অধঃ: অধঃপতন is correct, do NOT use অধোপতন.
 - অদ্ভুত is correct, do NOT use অদ্ভূত.
 - যুক্তবর্ণ (Conjuncts): Use ঙ for অঙ্ক, অঙ্গ (not অংক or অংগ).
+- সংখ্যা (Numbers): Bengali news text MUST use Bengali numerals (০-৯). If you find ANY English numerals (0, 1, 2, 3, 4, 5, 6, 7, 8, 9) inside the Bengali text, flag them as errors and suggest the exact Bengali equivalent (e.g., "15" -> "১৫", "7" -> "৭").
 
 Return ONLY a valid JSON object in this exact format:
 {
@@ -40,8 +41,7 @@ If no major rewrite is needed, just improve the flow and provide the translation
 export async function callGemini(systemPrompt, userText) {
   const apiKey = process.env.GEMINI_API_KEY;
   
-  // Upgraded to gemini-3.5-flash, which supports the 100% Free Tier (no billing required)
-  const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent";
+  const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
   
   const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
     method: "POST",
